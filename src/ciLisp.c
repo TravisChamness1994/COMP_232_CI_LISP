@@ -65,6 +65,14 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
         yyerror("Memory allocation failed!");
 
     // TODO set the AST_NODE's type, assign values to contained NUM_AST_NODE
+    node->type = NUM_NODE_TYPE;
+    node->data.number.type = type;
+
+    //Using types enumeration values to determine values
+    if(type == INT_TYPE)
+        node->data.number.value = (int)(value);
+    else
+        node->data.number.value = value;
 
     return node;
 }
@@ -80,14 +88,31 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList)
 {
     // TODO allocate space for the node being created.
 
+    AST_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if((node = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    node->type = FUNC_NODE_TYPE;
+
+    //If function is type Custom_Node. Not a good test for Custom node.
+    node->data.function.oper = resolveFunc(funcName);
+
+    if(node->data.function.oper == CUSTOM_OPER)
+        node->data.function.ident = funcName;
+
+    node->data.function.opList = opList;
+
     // TODO set the AST_NODE's type, populate contained FUNC_AST_NODE
-    // NOTE: you do not need to populate the "ident" field unless the function is type CUSTOM_OPER.
-    // When you do have a CUSTOM_OPER, you do NOT need to allocate and strcpy here.
-    // The funcName will be a string identifier for which space should be allocated in the tokenizer.
+    // NOTE: you do not need to populate the "ident" field unless the function is type CUSTOM_OPER. X?
+    // When you do have a CUSTOM_OPER, you do NOT need to allocate and strcpy here. X
+    // The funcName will be a string identifier for which space should be allocated in the tokenizer. X
     // For CUSTOM_OPER functions, you should simply assign the "ident" pointer to the passed in funcName.
     // For functions other than CUSTOM_OPER, you should free the funcName after you've assigned the OPER_TYPE.
 
-    return NULL;
+    return node;
 }
 
 
@@ -97,7 +122,8 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList)
 // and returns the head. That is, prepends newHead to the list.
 AST_NODE *addOperandToList(AST_NODE *newHead, AST_NODE *list)
 {
-    // TODO
+    newHead->next = list;
+    // TODO - addOperandToList - Done
     return NULL;
 }
 
@@ -170,6 +196,15 @@ RET_VAL eval(AST_NODE *node)
 // prints the type and value of a RET_VAL
 void printRetVal(RET_VAL val)
 {
+    //Val value may not work if casting causes error
+    switch (val.type)
+    {
+        case 0:
+            printf("Integer: %lf", val.value);
+            break;
+        case 1:
+            printf("Double: %lf", val.value);
+    }
     // TODO print the type and value of the value passed in.
 }
 

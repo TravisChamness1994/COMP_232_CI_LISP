@@ -10,7 +10,14 @@
 
 digit [0-9]
 int [+-]?{digit}+
-func "neg"|"abs"|"add"|"sub"|"mult"|"div"
+double [+-]?{digit}+\.{digit}*
+lparen [(]
+rparen [)]
+
+
+func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"equal"|"less"|"greater"
+
+
 
 %%
 
@@ -24,6 +31,12 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"
     return INT;
     }
 
+{double} {
+        llog(DOUBLE);
+        yylval.dval = strtod(yytext, NULL);
+        return DOUBLE;
+        }
+
 
 {func} {
     llog(FUNC);
@@ -31,6 +44,9 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"
     strcpy(yylval.sval, yytext);
     return FUNC;
     }
+
+{lparen} {return LPAREN;}
+{rparen} {return RPAREN;}
 
 [\n] {
     llog(EOL);
