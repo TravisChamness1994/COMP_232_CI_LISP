@@ -67,7 +67,19 @@ RET_VAL evalMult(AST_NODE *currNode)
     //recursive call
     evalMult(currNode->next);
 }
-RET_VAL evalDiv();
+RET_VAL evalDiv(AST_NODE *currNode)
+{
+    //End Recursion
+    if(currNode->next == NULL)
+        return currNode->data.number;
+    //Adjust for double
+    if(currNode->next->data.number.type == DOUBLE_TYPE)
+        currNode->data.number.type = DOUBLE_TYPE;
+    //perform Multiplication
+    currNode->data.number.value /= currNode->next->data.number.value;
+    //recursive call
+    evalDiv(currNode->next);
+}
 RET_VAL evalRem();
 RET_VAL evalExp();
 RET_VAL evalExp2();
