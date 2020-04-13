@@ -75,7 +75,7 @@ RET_VAL evalDiv(AST_NODE *currNode)
     //Adjust for double
     if(currNode->next->data.number.type == DOUBLE_TYPE)
         currNode->data.number.type = DOUBLE_TYPE;
-    //perform Multiplication
+    //perform Division
     currNode->data.number.value /= currNode->next->data.number.value;
     //recursive call
     evalDiv(currNode->next);
