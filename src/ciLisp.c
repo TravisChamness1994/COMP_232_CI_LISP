@@ -36,6 +36,52 @@ char *funcNames[] = {
         "greater",
         ""
 };
+//Task1 Evaluations
+RET_VAL evalNeg();
+RET_VAL evalAbs();
+RET_VAL evalAdd(AST_NODE *currNode)
+{
+    //End Recursion
+    if(currNode->next == NULL)
+        return currNode->data.number;
+    //Adjust for double
+    if(currNode->next->data.number.type == DOUBLE_TYPE)
+        currNode->data.number.type = DOUBLE_TYPE;
+    //perform addition
+    currNode->data.number.value += currNode->next->data.number.value;
+    //recursive call
+    evalAdd(currNode->next);
+
+}
+RET_VAL evalSub();
+RET_VAL evalMult(AST_NODE *currNode)
+{
+    //End Recursion
+    if(currNode->next == NULL)
+        return currNode->data.number;
+    //Adjust for double
+    if(currNode->next->data.number.type == DOUBLE_TYPE)
+        currNode->data.number.type = DOUBLE_TYPE;
+    //perform Multiplication
+    currNode->data.number.value *= currNode->next->data.number.value;
+    //recursive call
+    evalMult(currNode->next);
+}
+RET_VAL evalDiv();
+RET_VAL evalRem();
+RET_VAL evalExp();
+RET_VAL evalExp2();
+RET_VAL evalPow();
+RET_VAL evalLog();
+RET_VAL evalSqrt();
+RET_VAL evalCbrt();
+RET_VAL evalHypot();
+RET_VAL evalMax();
+RET_VAL evalMin(AST_NODE *currNode)
+{
+    if(currNode->next == NULL)
+
+}
 
 OPER_TYPE resolveFunc(char *funcName)
 {
@@ -138,9 +184,12 @@ RET_VAL evalNumNode(AST_NODE *node)
         return DEFAULT_RET_VAL;
 
     RET_VAL result = DEFAULT_RET_VAL;
-
     // TODO populate result with the values stored in the node.
     // SEE: AST_NODE, AST_NODE_TYPE, NUM_AST_NODE
+
+    result.type = node->data.number.type;
+    result.value = node->data.number.value;
+
     return result;
 }
 
@@ -155,7 +204,7 @@ RET_VAL evalNumNode(AST_NODE *node)
 // of performing the specified operation on that opList.
 // You should then call the appropriate function in evalFuncNode
 // based on the contents of the argument.
-RET_VAL evalFuncNode(AST_NODE *node)
+RET_VAL evalFuncNode(FUNC_AST_NODE *node)
 {
     if (!node)
         return DEFAULT_RET_VAL;
@@ -165,6 +214,80 @@ RET_VAL evalFuncNode(AST_NODE *node)
     // TODO populate result with the result of running the function on its operands.
     // SEE: AST_NODE, AST_NODE_TYPE, FUNC_AST_NODE
 
+    switch (node->oper)
+    {
+
+        if(node == NULL)
+            return result;
+        //neg
+        case 1:
+            result  = evalNeg(node->opList);
+            break;
+        //abs
+        case 2:
+            result = evalAbs(node->opList);
+            break;
+        //add
+        case 3:
+            result = evalAdd(*(node->opList), NULL);
+            break;
+        //sub
+        case 4:
+            result = evalSub(node->opList);
+            break;
+        //mult
+        case 5:
+            result = evalMult(node->opList);
+            break;
+        //div
+        case 6:
+            result = evalDiv(node->opList);
+            break;
+        //rem
+        case 7:
+            result = evalRem(node->opList);
+            break;
+        //exp
+        case 8:
+            result = evalExp(node->opList);
+            break;
+        //exp2
+        case 9:
+            result = evalExp2(node->opList);
+            break;
+        //pow
+        case 10:
+            result = evalPow(node->opList);
+            break;
+        //log
+        case 11:
+            result = evalLog(node->opList);
+            break;
+        //sqrt
+        case 12:
+            result = evalSqrt(node->opList);
+            break;
+        //cbrt
+        case 13:
+            result = evalCbrt(node->opList);
+            break;
+        //hypot
+        case 14:
+            result = evalHypot(node->opList);
+            break;
+        //max
+        case 15:
+            result = evalMax(node->opList);
+            break;
+        //min
+        case 16:
+            result = evalMin(node->opList);
+            break;
+
+        default:
+
+            break;
+    }
 
     return result;
 }
@@ -185,6 +308,12 @@ RET_VAL eval(AST_NODE *node)
     // Use the results of those calls to populate result.
     switch (node->type)
     {
+        case NUM_NODE_TYPE:
+            evalNumNode(node);
+            break;
+        case FUNC_NODE_TYPE:
+            evalFuncNode(node);
+            break;
         default:
             yyerror("Invalid AST_NODE_TYPE, probably invalid writes somewhere!");
     }
