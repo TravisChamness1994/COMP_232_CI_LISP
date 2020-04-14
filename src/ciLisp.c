@@ -1,5 +1,6 @@
 #include "ciLisp.h"
 
+RET_VAL evalFuncNode(FUNC_AST_NODE*);
 void yyerror(char *s) {
     fprintf(stdout, "\nERROR: %s\n", s);
     exit(1);
@@ -36,27 +37,94 @@ char *funcNames[] = {
         "greater",
         ""
 };
+
+//Expects evalNumNode() to adjust for integer numbers
 //Task1 Evaluations
-RET_VAL evalNeg();
-RET_VAL evalAbs();
+RET_VAL evalNeg(AST_NODE *node)
+{
+    RET_VAL result;
+    if(node == NULL)
+    {
+        printf("ERROR: neg called with no operands.");
+        result = DEFAULT_RET_VAL;
+    }
+    else
+        {
+        if(node->next != NULL)
+            printf("WARNING: neg called with extra(ignored) operands.");
+        //Check for function
+        result = eval(node);
+        result.value = -result.value;
+        }
+    return result;
+}
+
+RET_VAL evalAbs(AST_NODE *node)
+{
+    RET_VAL result;
+    if(node == NULL)
+    {
+        printf("ERROR: neg called with no operands.");
+        result = DEFAULT_RET_VAL;
+    }
+    else
+        {
+        if(node->next != NULL)
+            printf("WARNING: abs called with extra(ignored) operands.");
+        result = eval(node);
+        if(result.type == INT_TYPE)
+            result.value = abs((int)result.value);
+
+        }
+
+    return result;
+}
+
 RET_VAL evalAdd(AST_NODE *currNode)
 {
-    //End Recursion
+
+    //Base Case
     if(currNode->next == NULL)
         return currNode->data.number;
     //Adjust for double
     if(currNode->next->data.number.type == DOUBLE_TYPE)
         currNode->data.number.type = DOUBLE_TYPE;
-    //perform addition
-    currNode->data.number.value += currNode->next->data.number.value;
+    //perform additioni
+    currNode->next->data.number.value += eval(currNode).value;
     //recursive call
     evalAdd(currNode->next);
 
 }
-RET_VAL evalSub();
+
+RET_VAL evalSub(AST_NODE *currNode)
+{
+    //Base Cases
+    if(currNode == NULL)
+    {
+        printf("ERROR: sub called with no operands.");
+        return DEFAULT_RET_VAL;
+    }
+    if(currNode->next == NULL)
+        return currNode->data.number;
+    //Check Type
+    if(currNode->next->data.number.type == DOUBLE_TYPE)
+        currNode->data.number.type = DOUBLE_TYPE;
+    //perform subtractioni
+    currNode->data.number.value -= currNode->next->data.number.value;
+    currNode->next->data.number.value = currNode->data.number.value;
+    //recursive call
+    evalSub(currNode->next);
+
+}
+
 RET_VAL evalMult(AST_NODE *currNode)
 {
-    //End Recursion
+    //Base Case
+    if(currNode == NULL)
+    {
+        printf("ERROR: mult called with no operands.");
+        return DEFAULT_RET_VAL;
+    }
     if(currNode->next == NULL)
         return currNode->data.number;
     //Adjust for double
@@ -64,12 +132,19 @@ RET_VAL evalMult(AST_NODE *currNode)
         currNode->data.number.type = DOUBLE_TYPE;
     //perform Multiplication
     currNode->data.number.value *= currNode->next->data.number.value;
+    currNode->next->data.number.value = currNode->next->data.number.value;
     //recursive call
     evalMult(currNode->next);
 }
+
 RET_VAL evalDiv(AST_NODE *currNode)
 {
-    //End Recursion
+    //Base Case
+    if(currNode == NULL)
+    {
+        printf("ERROR: div called with no operands.");
+        return DEFAULT_RET_VAL;
+    }
     if(currNode->next == NULL)
         return currNode->data.number;
     //Adjust for double
@@ -77,11 +152,31 @@ RET_VAL evalDiv(AST_NODE *currNode)
         currNode->data.number.type = DOUBLE_TYPE;
     //perform Division
     currNode->data.number.value /= currNode->next->data.number.value;
+    currNode->next->data.number.value = currNode->next->data.number.value;
     //recursive call
     evalDiv(currNode->next);
 }
-RET_VAL evalRem();
-RET_VAL evalExp();
+
+RET_VAL evalRem()
+{
+
+}
+RET_VAL evalExp(AST_NODE *node)
+{
+    RET_VAL result = DEFAULT_RET_VAL;
+    //Base cases
+    if(node == NULL)
+    {
+        printf("ERROR: exp called with no operands");
+        return result;
+    }
+    else
+        {
+        //type check
+        if(node->type == FUNC_NODE_TYPE)
+            result = evalFuncNode(node->data.function);
+        }
+}
 RET_VAL evalExp2();
 RET_VAL evalPow();
 RET_VAL evalLog();
@@ -89,11 +184,7 @@ RET_VAL evalSqrt();
 RET_VAL evalCbrt();
 RET_VAL evalHypot();
 RET_VAL evalMax();
-RET_VAL evalMin(AST_NODE *currNode)
-{
-    if(currNode->next == NULL)
-
-}
+RET_VAL evalMin(AST_NODE *currNode);
 
 OPER_TYPE resolveFunc(char *funcName)
 {
@@ -155,12 +246,12 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList)
 
     node->type = FUNC_NODE_TYPE;
 
-    //If function is type Custom_Node. Not a good test for Custom node.
+    //assign function to the result of resolve Func
     node->data.function.oper = resolveFunc(funcName);
-
+    //If oper is a custom_oper, set the ident to funcName
     if(node->data.function.oper == CUSTOM_OPER)
         node->data.function.ident = funcName;
-
+    //Set the oplist
     node->data.function.opList = opList;
 
     // TODO set the AST_NODE's type, populate contained FUNC_AST_NODE
@@ -192,15 +283,17 @@ AST_NODE *addOperandToList(AST_NODE *newHead, AST_NODE *list)
 // SEE: AST_NODE, NUM_AST_NODE, RET_VAL
 RET_VAL evalNumNode(AST_NODE *node)
 {
+    RET_VAL result;
     if (!node)
-        return DEFAULT_RET_VAL;
-
-    RET_VAL result = DEFAULT_RET_VAL;
+        result = DEFAULT_RET_VAL;
+    else
+        {
+            if(node->data.number.type == INT_TYPE)
+                node->data.number.value = floor(node->data.number.value);
+            result = node->data.number;
+        }
     // TODO populate result with the values stored in the node.
     // SEE: AST_NODE, AST_NODE_TYPE, NUM_AST_NODE
-
-    result.type = node->data.number.type;
-    result.value = node->data.number.value;
 
     return result;
 }
@@ -228,71 +321,68 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *node)
 
     switch (node->oper)
     {
-
-        if(node == NULL)
-            return result;
         //neg
-        case 1:
+        case NEG_OPER:
             result  = evalNeg(node->opList);
             break;
         //abs
-        case 2:
+        case ABS_OPER:
             result = evalAbs(node->opList);
             break;
         //add
-        case 3:
-            result = evalAdd(*(node->opList), NULL);
+        case ADD_OPER:
+            result = evalAdd(node->opList);
             break;
         //sub
-        case 4:
+        case SUB_OPER:
             result = evalSub(node->opList);
             break;
         //mult
-        case 5:
+        case MULT_OPER:
             result = evalMult(node->opList);
             break;
         //div
-        case 6:
+        case DIV_OPER:
             result = evalDiv(node->opList);
             break;
         //rem
-        case 7:
+        case REMAINDER_OPER:
             result = evalRem(node->opList);
             break;
         //exp
-        case 8:
+        case EXP_OPER:
             result = evalExp(node->opList);
             break;
         //exp2
-        case 9:
+        case EXP2_OPER:
             result = evalExp2(node->opList);
             break;
         //pow
-        case 10:
+        case POW_OPER:
             result = evalPow(node->opList);
             break;
         //log
-        case 11:
+        case LOG_OPER:
             result = evalLog(node->opList);
             break;
         //sqrt
-        case 12:
+        case SQRT_OPER:
             result = evalSqrt(node->opList);
             break;
         //cbrt
-        case 13:
+        case CBRT_OPER:
             result = evalCbrt(node->opList);
             break;
         //hypot
-        case 14:
+        case HYPOT_OPER:
             result = evalHypot(node->opList);
             break;
         //max
-        case 15:
+        case MAX_OPER:
             result = evalMax(node->opList);
             break;
         //min
-        case 16:
+        case MIN_OPER:
             result = evalMin(node->opList);
             break;
 
