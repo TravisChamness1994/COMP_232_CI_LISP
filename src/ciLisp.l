@@ -15,7 +15,7 @@ lparen [(]
 rparen [)]
 
 
-func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"equal"|"less"|"greater"
+func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"equal"|"less"|"greater"
 
 
 
@@ -45,12 +45,14 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"
     return FUNC;
     }
 
-{lparen} {return LPAREN;}
+{lparen} {
+            llog(RPAREN);
+            return LPAREN;
+         }
 {rparen} {return RPAREN;}
 
 [\n] {
     llog(EOL);
-    YY_FLUSH_BUFFER;
     return EOL;
     }
 
