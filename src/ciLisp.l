@@ -46,10 +46,13 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|
     }
 
 {lparen} {
-            llog(RPAREN);
-            return LPAREN;
+     llog(LPAREN);
+     return LPAREN;
          }
-{rparen} {return RPAREN;}
+{rparen} {
+    llog(RPAREN);
+    return RPAREN;
+}
 
 [\n] {
     llog(EOL);

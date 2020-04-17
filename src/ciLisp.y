@@ -67,7 +67,10 @@ number:
     };
 
 f_expr:
-    LPAREN FUNC s_expr_list RPAREN {
+    LPAREN FUNC RPAREN {
+        $$ = createFunctionNode($2, NULL);
+    }
+    |LPAREN FUNC s_expr_list RPAREN {
         ylog(f_expr, s_expr_list);
         $$ = createFunctionNode($2,$3);
     };
