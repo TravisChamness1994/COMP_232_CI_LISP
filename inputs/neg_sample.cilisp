@@ -1,0 +1,5 @@
+(neg)
+(neg -1)
+(neg 1)
+(neg (abs -5.5))
+(neg 1 2)

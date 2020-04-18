@@ -199,7 +199,7 @@ void evalExp(AST_NODE *node, RET_VAL *result)
     if(fmod(result->value, 1))
         result->type = DOUBLE_TYPE;
 }
-RET_VAL evalExp2(AST_NODE *node, RET_VAL *result)
+void evalExp2(AST_NODE *node, RET_VAL *result)
 {
     if(node != NULL)
         printWarning("exp2 called with extra(ignored) operands.");
@@ -225,19 +225,66 @@ void evalPow(AST_NODE *node, RET_VAL *result)
             result->type = DOUBLE_TYPE;
     }
 }
-RET_VAL evalLog(AST_NODE *node, RET_VAL *result)
+void evalLog(AST_NODE *node, RET_VAL *result)
  {
     if(node != NULL)
          printWarning("exp called with extra(ignored) operands.");
     result->value = log(result->value);
+    result->type = DOUBLE_TYPE;
+ }
+void evalSqrt(AST_NODE *node, RET_VAL *result)
+{
+    if(node != NULL)
+        printWarning("exp called with extra(ignored) operands.");
+    result->value = sqrt(result->value);
     if(fmod(result->value, 1))
         result->type = DOUBLE_TYPE;
- }
-//RET_VAL evalSqrt();
-//RET_VAL evalCbrt();
-//RET_VAL evalHypot();
-//RET_VAL evalMax();
-//RET_VAL evalMin(AST_NODE *currNode);
+}
+RET_VAL evalCbrt(AST_NODE *node, RET_VAL *result)
+{
+    if(node != NULL)
+        printWarning("cbrt called with extra(ignored) operands.");
+    result->value = cbrt(result->value);
+    if(fmod(result->value, 1))
+        result->type = DOUBLE_TYPE;
+}
+void evalHypot(AST_NODE *currNode, RET_VAL *result)
+{
+
+    if(currNode == NULL)
+    {
+        return;
+    }
+
+    result->value = hypot(result->value, eval(currNode).value);
+    //recursive call
+    evalHypot(currNode->next,result);
+
+}
+void evalMax(AST_NODE *currNode, RET_VAL *result)
+{
+    if(currNode == NULL)
+    {
+        return;
+    }
+
+    currNode->data.number = eval(currNode);
+    if(currNode->data.number.value > result->value)
+        *result = currNode->data.number;
+    evalMax(currNode->next, result);
+}
+void evalMin(AST_NODE *currNode, RET_VAL *result)
+{
+    if(currNode == NULL)
+    {
+        return;
+    }
+
+    currNode->data.number = eval(currNode);
+    if(currNode->data.number.value < result->value)
+        *result = currNode->data.number;
+    evalMin(currNode->next, result);
+}
 
 OPER_TYPE resolveFunc(char *funcName)
 {
@@ -485,28 +532,61 @@ RET_VAL evalFuncNode(AST_NODE *node)
                 printf("\nERROR: log called with no operands!\n");
                 break;
             }
-            evalExp2(node->data.function.opList->next, &result);
+            evalLog(node->data.function.opList->next, &result);
             break;
 //        //sqrt
-//        case SQRT_OPER:
-//            result = evalSqrt(node->data.function.opList);
-//            break;
+        case SQRT_OPER:
+            getFirst(node->data.function.opList, &result, &error);
+            if (error)
+            {
+                printf("\nERROR: sqrt called with no operands!\n");
+                break;
+            }
+            evalSqrt(node->data.function.opList->next, &result);
+            break;
 //        //cbrt
-//        case CBRT_OPER:
-//            result = evalCbrt(node->data.function.opList);
-//            break;
+        case CBRT_OPER:
+            getFirst(node->data.function.opList, &result, &error);
+            if(error)
+            {
+                printf("\nERROR: cbrt called with no operands!\n");
+                break;
+            }
+            evalCbrt(node->data.function.opList->next, &result);
+            break;
 //        //hypot
-//        case HYPOT_OPER:
-//            result = evalHypot(node->data.function.opList);
-//            break;
+        case HYPOT_OPER:
+            funcResInitializer(&result);
+            getFirst(node->data.function.opList, &result, &error);
+            //accomodate type
+            result.type = DOUBLE_TYPE;
+            if(error)
+            {
+                printf("\nERROR: hypot called with no operands!\n");
+                break;
+            }
+            evalHypot(node->data.function.opList->next, &result);
+            break;
 //        //max
-//        case MAX_OPER:
-//            result = evalMax(node->data.function.opList);
-//            break;
+        case MAX_OPER:
+            getFirst(node->data.function.opList, &result, &error);
+            if(error)
+            {
+                printf("\nERROR: max called with no operands!\n");
+                break;
+            }
+            evalMax(node->data.function.opList->next, &result);
+            break;
 //        //min
-//        case MIN_OPER:
-//            result = evalMin(node->data.function.opList);
-//            break;
+        case MIN_OPER:
+            getFirst(node->data.function.opList, &result, &error);
+            if(error)
+            {
+                printf("\nERROR: min called with no operands!\n");
+                break;
+            }
+            evalMin(node->data.function.opList, &result);
+            break;
 
         default:
             printf("Switch entered default.");

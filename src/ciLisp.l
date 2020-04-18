@@ -9,8 +9,10 @@
 %}
 
 digit [0-9]
+letter [a-zA-Z]
 int [+-]?{digit}+
 double [+-]?{digit}+\.{digit}*
+symbol {letter}+
 lparen [(]
 rparen [)]
 
@@ -37,12 +39,18 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|
         return DOUBLE;
         }
 
-
 {func} {
     llog(FUNC);
     yylval.sval = (char *) malloc(strlen(yytext)*sizeof(char)+1);
     strcpy(yylval.sval, yytext);
     return FUNC;
+    }
+
+{symbol} {
+    llog(SYMBOL);
+    yylval.sval = (char*) malloc(strlen(yytext)*sizeof(char)+1);
+    strcpy(yylval.sval, yytext);
+    return SYMBOL;
     }
 
 {lparen} {

@@ -1,0 +1,7 @@
+(log)
+(log 1)
+(log 0)
+(log -1)
+(log (exp 1))
+(div (log 27) (log 3))
+(log 1 2)
