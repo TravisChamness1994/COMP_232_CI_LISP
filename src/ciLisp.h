@@ -53,7 +53,8 @@ OPER_TYPE resolveFunc(char *);
 // Types of numeric values
 typedef enum {
     INT_TYPE,
-    DOUBLE_TYPE
+    DOUBLE_TYPE,
+    NO_TYPE
 } NUM_TYPE;
 
 // Node to store a number.
@@ -74,30 +75,52 @@ typedef struct {
     struct ast_node *opList;
 } FUNC_AST_NODE;
 
+//Stores a symbol as a string
+typedef struct {
+    char* id;
+} SYM_AST_NODE;
 // Types of Abstract Syntax Tree nodes.
 // Initially, there are only numbers and functions.
 // You will expand this enum as you build the project.
 typedef enum {
     NUM_NODE_TYPE,
-    FUNC_NODE_TYPE
+    FUNC_NODE_TYPE,
+    SYM_NODE_TYPE
 } AST_NODE_TYPE;
 
 // Generic Abstract Syntax Tree node. Stores the type of node,
 // and reference to the corresponding specific node (initially a number or function call).
 typedef struct ast_node {
     AST_NODE_TYPE type;
+    struct ast_node *parent;
+    struct symbol_table_node *symbolTable;
     union {
         NUM_AST_NODE number;
         FUNC_AST_NODE function;
+        SYM_AST_NODE symbol;
     } data;
     struct ast_node *next; // for linked-list style operand inputs
 } AST_NODE;
 
+//Task 2
+typedef struct symbol_table_node {
+    char *id;
+    //Task 3
+    NUM_TYPE type;
+    //End
+    AST_NODE *value;
+    struct symbol_table_node *next;
+} SYMBOL_TABLE_NODE;
+//End
 
+AST_NODE *createSymbolNode(char* id);
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
 AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList);
+SYMBOL_TABLE_NODE *createSymbolTableNode(char* type, char* id, AST_NODE *value);
 
+AST_NODE *symbolTreeAstLink(SYMBOL_TABLE_NODE* symbolTable, AST_NODE* node);
 AST_NODE *addOperandToList(AST_NODE *newHead, AST_NODE *list);
+SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *list, SYMBOL_TABLE_NODE *newHead);
 
 RET_VAL eval(AST_NODE *node);
 

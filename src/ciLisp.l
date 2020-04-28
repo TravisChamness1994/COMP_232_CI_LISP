@@ -8,6 +8,10 @@
     #define llog(token) fprintf(flex_bison_log_file, "LEX: %s \"%s\"\n", #token, yytext);
 %}
 
+func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"equal"|"less"|"greater"
+let "let"
+type "int"|"double"
+
 digit [0-9]
 letter [a-zA-Z]
 int [+-]?{digit}+
@@ -15,11 +19,6 @@ double [+-]?{digit}+\.{digit}*
 symbol {letter}+
 lparen [(]
 rparen [)]
-
-
-func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"equal"|"less"|"greater"
-
-
 
 %%
 
@@ -45,6 +44,18 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|
     strcpy(yylval.sval, yytext);
     return FUNC;
     }
+
+{let} {
+    llog(let);
+    return let;
+    }
+
+{type} {
+    llog(TYPE);
+    yylval.sval = (char*) malloc(strlen(yytext)*sizeof(char)+1);
+    strcpy(yylval.sval, yytext);
+    return TYPE;
+}
 
 {symbol} {
     llog(SYMBOL);
@@ -100,6 +111,7 @@ int main(int argc, char **argv)
     while(1) {
         if (!input_from_file)
             printf("> ");
+        else
         if (yyparse()) {
             YY_FLUSH_BUFFER;
         }

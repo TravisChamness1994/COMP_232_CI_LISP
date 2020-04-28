@@ -7,13 +7,15 @@
     double dval;
     char *sval;
     struct ast_node *astNode;
+    struct symbol_table_node *symNode;
 }
 
-%token <sval> FUNC
+%token <sval> FUNC SYMBOL TYPE
 %token <dval> INT DOUBLE
-%token LPAREN RPAREN EOL QUIT EOFT
+%token LPAREN RPAREN EOL QUIT EOFT let
 
 %type <astNode> s_expr f_expr number s_expr_list
+%type <symNode> let_section let_elem let_list
 
 %%
 
@@ -45,6 +47,16 @@ s_expr:
 	ylog(s_expr, f_expr);
 	$$ = $1;
     }
+    | SYMBOL
+    {
+    	ylog(s_expr,SYMBOL);
+    	$$ = createSymbolNode($1);
+    }
+    | LPAREN let_section s_expr RPAREN
+    {
+    	ylog(s_expr, LPAREN let_section s_expr RPAREN);
+    	$$ = symbolTreeAstLink($2, $3);
+    }
     | QUIT {
         ylog(s_expr, QUIT);
         exit(EXIT_SUCCESS);
@@ -68,6 +80,7 @@ number:
 
 f_expr:
     LPAREN FUNC RPAREN {
+    	ylog(f_expr, FUCN);
         $$ = createFunctionNode($2, NULL);
     }
     |LPAREN FUNC s_expr_list RPAREN {
@@ -83,6 +96,34 @@ s_expr_list:
     | s_expr s_expr_list{
     	ylog(s_expr_list, s_expr s_expr_list);
     	$$ = addOperandToList($1,$2);
+    };
+
+let_section:
+    %empty
+    |
+    LPAREN let let_list RPAREN{
+        ylog(let_section, let let_list);
+        $$ = $3;
+    };
+
+let_list:
+    let_elem{
+        ylog(let_list, let_elem);
+        $$ = $1;
+    }
+    | let_list let_elem{
+        ylog(let_list, let_list let_elem);
+        $$ = addSymbolToList($1, $2);
+    };
+
+let_elem:
+    LPAREN SYMBOL s_expr RPAREN{
+        ylog(let_elem, SYMBOL s_expr);
+        $$ = createSymbolTableNode(NULL,$2,$3);
+    }
+    |LPAREN TYPE SYMBOL s_expr RPAREN{
+    	ylog(let_elem, TYPE SYMBOL s_expr);
+    	$$ = createSymbolTableNode($2,$3,$4);
     };
 
 %%

@@ -40,7 +40,11 @@ char *funcNames[] = {
         "greater",
         ""
 };
-
+char* numNames[] =
+        {
+        "int",
+        "double",
+        };
 //Expects evalNumNode() to adjust for integer numbers
 //Task1 Evaluations
 RET_VAL evalNeg(AST_NODE *node)
@@ -240,7 +244,8 @@ void evalSqrt(AST_NODE *node, RET_VAL *result)
     if(fmod(result->value, 1))
         result->type = DOUBLE_TYPE;
 }
-RET_VAL evalCbrt(AST_NODE *node, RET_VAL *result)
+
+void evalCbrt(AST_NODE *node, RET_VAL *result)
 {
     if(node != NULL)
         printWarning("cbrt called with extra(ignored) operands.");
@@ -297,6 +302,20 @@ OPER_TYPE resolveFunc(char *funcName)
     }
     return CUSTOM_OPER;
 }
+//Task 3 for num type resolution
+//Called when a symbol node is being created to assign the value of the symbol its type
+NUM_TYPE resolveNum(char* numType)
+{
+    int i = 0;
+    while (numNames[i][0] != '\0')
+    {
+        if(strcmp(numNames[i], numType) == 0)
+            return i;
+        i++;
+    }
+    return NO_TYPE;
+}
+//End
 
 // Called when an INT or DOUBLE token is encountered (see ciLisp.l and ciLisp.y).
 // Creates an AST_NODE for the number.
@@ -316,16 +335,33 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
     // TODO set the AST_NODE's type, assign values to contained NUM_AST_NODE
     node->type = NUM_NODE_TYPE;
     node->data.number.type = type;
-
-    //Using types enumeration values to determine values
-    if(type == INT_TYPE)
-        node->data.number.value = (int)(value);
-    else
-        node->data.number.value = value;
+    node->data.number.value = value;
 
     return node;
 }
 
+//Creates an AST_NODE for the SYMBOL.
+//sets the AST_NODE's type to symbol.
+//Populates the id of the contained SYMBOL_AST_NODE with the argument value.
+SYMBOL_TABLE_NODE *createSymbolTableNode(char* type,char* id, AST_NODE *value)
+{
+    SYMBOL_TABLE_NODE *symbolNode;
+    size_t nodeSize;
+
+    nodeSize = sizeof(SYMBOL_TABLE_NODE);
+    if((symbolNode = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    symbolNode->id = id;
+    symbolNode->value = value;
+    //Task 3
+    if (type == NULL)
+        symbolNode->type = NO_TYPE;
+    else
+        symbolNode->type = resolveNum(type);
+    //End
+    return symbolNode;
+}
 // Called when an f_expr is created (see ciLisp.y).
 // Creates an AST_NODE for a function call.
 // Sets the created AST_NODE's type to function.
@@ -333,32 +369,39 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
 //      - An OPER_TYPE (the enum identifying the specific function being called)
 //      - 2 AST_NODEs, the operands
 // SEE: AST_NODE, FUNC_AST_NODE, AST_NODE_TYPE.
-AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList)
-{
+AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList) {
     // TODO allocate space for the node being created.
-
+    //Task2 - Added opList->parent = node; Links the oplist to the node parent
     AST_NODE *node;
     size_t nodeSize;
 
     nodeSize = sizeof(AST_NODE);
-    if((node = calloc(nodeSize, 1)) == NULL)
+    if ((node = calloc(nodeSize, 1)) == NULL)
         yyerror("Memory allocation failed!");
 
     node->type = FUNC_NODE_TYPE;
 
     //assign function to the result of resolve Func
-    if(funcName == NULL)
+    if (funcName == NULL)
         node->data.function.oper = (OPER_TYPE) NULL;
     else
         node->data.function.oper = resolveFunc(funcName);
     //If oper is a custom_oper, set the ident to funcName
-    if(node->data.function.oper == CUSTOM_OPER)
+    if (node->data.function.oper == CUSTOM_OPER)
         node->data.function.ident = funcName;
     //Set the oplist
-    if(opList == NULL)
+    if (opList == NULL)
         node->data.function.opList = NULL;
-    else
+    else {
         node->data.function.opList = opList;
+        AST_NODE* currNode = opList;
+        //TODO - createFunctionNode Task 2 Parent Association - Done
+        while(currNode != NULL)
+        {
+            currNode->parent = node;
+            currNode = currNode->next;
+        }
+    }
 
     // TODO set the AST_NODE's type, populate contained FUNC_AST_NODE
     // NOTE: you do not need to populate the "ident" field unless the function is type CUSTOM_OPER. X?
@@ -369,20 +412,57 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList)
 
     return node;
 }
+AST_NODE *createSymbolNode(char* id)
+{
+    AST_NODE *node;
+    size_t size;
 
+    size = sizeof(AST_NODE);
+    if((node = calloc(size, 1)) == NULL)
+        yyerror("Memory allocation failed!");
 
+    node->type = SYM_NODE_TYPE;
+    node->data.symbol.id = id;
+
+    return node;
+}
 // Receives an AST_NODE *list (an s_expr_list) and an
 // AST_NODE *newHead (the new element to add to the list as
 // its head). Links newHead up to list, with newHead as the head,
 // and returns the head. That is, prepends newHead to the list.
 AST_NODE *addOperandToList(AST_NODE *newHead, AST_NODE *list)
 {
-    newHead->next = list;
     // TODO - addOperandToList - Done
+    //Task 2
+    //List parents are associated to the owner of the symbol table
+    newHead->next = list;
     return newHead;
 }
 
+AST_NODE *symbolTreeAstLink(SYMBOL_TABLE_NODE* symbolTable, AST_NODE* node)
+{
+    //TODO - SymbolTreeAstLink
+    //links symbol table to AST_NODE and associates the symolTable value parents to node
+    node->symbolTable = symbolTable;
+    SYMBOL_TABLE_NODE* currSymbol = symbolTable;
+    while(currSymbol != NULL)
+    {
+        currSymbol->value->parent = node;
+        currSymbol = currSymbol->next;
+    }
+    return node;
+}
 
+SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *list, SYMBOL_TABLE_NODE *newHead)
+{
+    //TODO - AddSymbolToList
+    //creates new head to symbolTree
+    //Task 2
+    //List parents are associated to the owner of the symbol table
+    newHead->next = list;
+
+    return newHead;
+}
 // Evaluates an AST_NODE whose type is NUM_NODE_TYPE.
 // Called by the eval function, which evaluates any AST_NODE.
 // Returns a RET_VAL with the data stored in the contained NUMBER_AST_NODE.
@@ -596,6 +676,37 @@ RET_VAL evalFuncNode(AST_NODE *node)
     return result;
 }
 
+void evalSymbolNode(AST_NODE* node, char* id, RET_VAL *result)
+{
+    //TODO - EvalSymbolNode - Task 2
+    //Basecases
+    if (!node)
+        return;
+    //search through immediate node for id in symbol table
+    if(node->symbolTable != NULL)
+    {
+        SYMBOL_TABLE_NODE *currNode = node->symbolTable;
+        while(currNode != NULL)
+        {
+            if(strcmp(currNode->id, id) == 0){
+                *result = eval(currNode->value);
+                if(currNode->type == INT_TYPE || currNode->type == DOUBLE_TYPE)
+                    result->type = currNode->type;
+                return;
+            }
+            currNode = currNode->next;
+        }
+    }
+    //Step up to parent and eval symbol table of parent node if symbol table is null
+    if(node->parent != NULL)
+        evalSymbolNode(node->parent, id, result);
+    else{ //if no parent exists and the symbol table is empty or does not contain it, then the symbol is undefined
+        printf("\nERROR: Undefined Symbol!");
+        return;
+    }
+
+}
+
 // Evaluates an AST_NODE.
 // returns a RET_VAL storing the the resulting value and type.
 // You'll need to update and expand eval (and the more specific eval functions below)
@@ -617,6 +728,9 @@ RET_VAL eval(AST_NODE *node)
             break;
         case FUNC_NODE_TYPE:
             result = evalFuncNode(node);
+            break;
+        case SYM_NODE_TYPE:
+            evalSymbolNode(node, node->data.symbol.id, &result);
             break;
         default:
             yyerror("Invalid AST_NODE_TYPE, probably invalid writes somewhere!");

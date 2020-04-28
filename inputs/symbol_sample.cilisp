@@ -1,0 +1,6 @@
+((let(x 1))x)
+((let (abc (cbrt 8))) (add (sub 3 abc) 4))
+(mult ((let (a 1) (b 2)) (add a b)) (sqrt 2))
+((let (abc 1) (de 1)) (sub (add abc de) abc))
+((let (abc 1)) (add 2 abc))
+(add ((let (a 1)) (sub 2 a)) a)
