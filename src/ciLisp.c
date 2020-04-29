@@ -355,11 +355,13 @@ SYMBOL_TABLE_NODE *createSymbolTableNode(char* type,char* id, AST_NODE *value)
     symbolNode->id = id;
     symbolNode->value = value;
     //Task 3
-    if (type == NULL)
+    if (type == NULL) {
         symbolNode->type = NO_TYPE;
+    }
     else
         symbolNode->type = resolveNum(type);
     //End
+//    free(type);
     return symbolNode;
 }
 // Called when an f_expr is created (see ciLisp.y).
@@ -410,6 +412,8 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList) {
     // For CUSTOM_OPER functions, you should simply assign the "ident" pointer to the passed in funcName.
     // For functions other than CUSTOM_OPER, you should free the funcName after you've assigned the OPER_TYPE.
 
+    //TODO Task 2 -Freeing custom info: only works when I am not using a custom function, needs to be adjusted
+    free(funcName);
     return node;
 }
 AST_NODE *createSymbolNode(char* id)
@@ -690,8 +694,29 @@ void evalSymbolNode(AST_NODE* node, char* id, RET_VAL *result)
         {
             if(strcmp(currNode->id, id) == 0){
                 *result = eval(currNode->value);
-                if(currNode->type == INT_TYPE || currNode->type == DOUBLE_TYPE)
-                    result->type = currNode->type;
+
+                if(currNode->type != NUM_NODE_TYPE)
+                {
+                    freeNode(currNode->value);
+                    currNode->value = createNumberNode(result->value,result->type);
+                }
+
+                //if the result and the Symbol Node type do not agree, then handle the differences
+                //TODO task 3 Change to accomodate ALWAYS. Result if Int and curr if Int should still floor the result value. EX: ((int)3/2) * 4 = 6 when it should equal 4
+                if(result->type != currNode->type)
+                {
+                    //if result is of double and currNode is of int, there will be a precision loss
+                    if(result->type == DOUBLE_TYPE){
+                        printf("\nWARNING: precision loss on int case from %f to %.0f for variable %s\n",result->value, result->value, currNode->id);
+                        result->type = currNode->type;
+                        result->value = floor(result->value);
+                    }
+                    //Otherwise there is no precision loss and no value truncation
+                    else
+                        {
+                        result->type = currNode->type;
+                        }
+                }
                 return;
             }
             currNode = currNode->next;
@@ -755,6 +780,17 @@ void printRetVal(RET_VAL val)
     // TODO print the type and value of the value passed in.
 }
 
+//helper method in freeNode method for freeing any symbol tables
+void freeSymbolTable(SYMBOL_TABLE_NODE* node)
+{
+    if(!node)
+        return;
+
+    freeSymbolTable(node->next);
+    freeNode(node->value);
+    free(node->id);
+    free(node);
+}
 
 // Called after execution is done on the base of the tree.
 // (see the program production in ciLisp.y)
@@ -766,13 +802,28 @@ void freeNode(AST_NODE *node)
 {
     if (!node)
         return;
-
     // TODO if the node's next pointer isn't NULL,
         // make a recursive call to free it
-
+    freeNode(node->next);
     // TODO:
     // if the node is a function node:
         // make a recursive call to free its opList
+    switch(node->type)
+    {
+        case FUNC_NODE_TYPE:
+            freeNode(node->data.function.opList);
+            free(node->data.function.ident);
+            break;
+        case SYM_NODE_TYPE:
+            free(node->data.symbol.id);
+            break;
+        default:
+            break;
+
+    }
+
+    freeSymbolTable(node->symbolTable);
 
     free(node);
 }
+

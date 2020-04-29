@@ -88,6 +88,7 @@ rparen [)]
 
 . { // anything else
     llog(INVALID);
+    printf("\nERROR: invalid character: >>%s<<\n", yytext);
     }
 
 %%
