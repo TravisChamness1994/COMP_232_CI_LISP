@@ -1,0 +1,4 @@
+(cond 0 5 6)
+(cond 1 5 6)
+(cond 0 5 (mult ((let (double a (div 3 2))) a) 4))
+((let (int a (rand)))(cond a (div 10 2) (pow 2 3)))

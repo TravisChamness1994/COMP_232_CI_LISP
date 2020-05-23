@@ -1,0 +1,3 @@
+(add 4 (read))
+((let (int a (read)))(mult a 2)) 3.5 3
+((let (double a (read)))(mult a 2)) -f15.+.5448df , -0138.86+f.5, dsf4836.a69jf++.5

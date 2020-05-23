@@ -8,8 +8,10 @@
     #define llog(token) fprintf(flex_bison_log_file, "LEX: %s \"%s\"\n", #token, yytext);
 %}
 
-func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"equal"|"less"|"greater"
+func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"rem"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"|"print"|"read"|"rand"|"equal"|"less"|"greater"
 let "let"
+lambda "lambda"
+cond "cond"
 type "int"|"double"
 
 digit [0-9]
@@ -45,9 +47,19 @@ rparen [)]
     return FUNC;
     }
 
+{cond} {
+     llog(cond);
+     return cond;
+     }
+
 {let} {
     llog(let);
     return let;
+    }
+
+{lambda} {
+    llog(lambda);
+    return lambda;
     }
 
 {type} {
@@ -112,7 +124,6 @@ int main(int argc, char **argv)
     while(1) {
         if (!input_from_file)
             printf("> ");
-        else
         if (yyparse()) {
             YY_FLUSH_BUFFER;
         }

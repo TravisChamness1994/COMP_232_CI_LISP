@@ -1,0 +1,7 @@
+((let (int myFunc lambda (x y) (add x y))) (myFunc 1.0 2))
+((let (double myFunc lambda (x y) (mult (add x 5) (sub y 2)))) (sub (myFunc 3 5) 2))
+((let (gcd lambda (x y) (cond (greater y x) (gcd y x) (cond (equal y 0) x (gcd y (rem x y)))))) (gcd 95 55))
+((let (int a 1)(f lambda (x y) (add x y)))(f 2 (f a 3)))
+((let (f lambda (x y) (add x y)))(f (sub 5 2) (mult 2 3)))
+((let (f lambda (x y) (add x y)))(f (sub 5 2) (mult 2 3) (div 5 2)))
+((let (f lambda (x y) (add x y)))(f (sub 5 2)))

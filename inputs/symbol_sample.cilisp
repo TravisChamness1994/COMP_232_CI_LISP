@@ -4,3 +4,4 @@
 ((let (abc 1) (de 1)) (sub (add abc de) abc))
 ((let (abc 1)) (add 2 abc))
 (add ((let (a 1)) (sub 2 a)) a)
+(add ((let (a ((let (b 2)) (mult b (sqrt 10))))) (div a 2)) ((let (c 5)) (sqrt c)))

@@ -10,6 +10,7 @@
 
 #include "ciLispParser.h"
 
+#define BUFF_SIZE 256
 #define DEFAULT_RET_VAL (RET_VAL){INT_TYPE, NAN}
 
 FILE* flex_bison_log_file;
@@ -57,6 +58,12 @@ typedef enum {
     NO_TYPE
 } NUM_TYPE;
 
+typedef enum{
+    SYM_TYPE,
+    LAMBDA_TYPE,
+    ARG_TYPE
+} SYMBOL_TYPE;
+
 // Node to store a number.
 typedef struct {
     NUM_TYPE type;
@@ -71,10 +78,27 @@ typedef NUM_AST_NODE RET_VAL;
 // Node to store a function call with its inputs
 typedef struct {
     OPER_TYPE oper;
-    char *ident; // only needed for custom functions
+    char* ident; // only needed for custom functions
     struct ast_node *opList;
 } FUNC_AST_NODE;
 
+//Task 4
+//creation of a node that will have information usable for us to create a ternary simulation conditional execution.
+typedef struct cond_node{
+    struct ast_node* truNode;
+    struct ast_node* flsNode;
+    struct ast_node* booleanNode;
+} COND_AST_NODE;
+//END
+
+typedef struct stack_node{
+    RET_VAL stack_node;
+    struct stack_node* next;
+    //update to make stack easier, however, no longer stack behavior. What kind of implications could this have?
+    struct stack_node* prev;
+}STACK_NODE;
+
+//Task 2
 //Stores a symbol as a string
 typedef struct {
     char* id;
@@ -85,7 +109,8 @@ typedef struct {
 typedef enum {
     NUM_NODE_TYPE,
     FUNC_NODE_TYPE,
-    SYM_NODE_TYPE
+    SYM_NODE_TYPE,
+    COND_NODE_TYPE
 } AST_NODE_TYPE;
 
 // Generic Abstract Syntax Tree node. Stores the type of node,
@@ -93,11 +118,14 @@ typedef enum {
 typedef struct ast_node {
     AST_NODE_TYPE type;
     struct ast_node *parent;
+    struct symbol_table_node *customFuncTable;
+    struct symbol_table_node *argTable;
     struct symbol_table_node *symbolTable;
     union {
         NUM_AST_NODE number;
         FUNC_AST_NODE function;
         SYM_AST_NODE symbol;
+        COND_AST_NODE cond;
     } data;
     struct ast_node *next; // for linked-list style operand inputs
 } AST_NODE;
@@ -105,20 +133,29 @@ typedef struct ast_node {
 //Task 2
 typedef struct symbol_table_node {
     char *id;
+    AST_NODE *value;
+    struct symbol_table_node *next;
+    struct symbol_table_node *prev;
     //Task 3
     NUM_TYPE type;
     //End
-    AST_NODE *value;
-    struct symbol_table_node *next;
+    //Task 5
+    SYMBOL_TYPE symbolType;
+    struct stack_node *stack;
+    //End
+
 } SYMBOL_TABLE_NODE;
 //End
+
 
 AST_NODE *createSymbolNode(char* id);
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
 AST_NODE *createFunctionNode(char *funcName, AST_NODE *opList);
 SYMBOL_TABLE_NODE *createSymbolTableNode(char* type, char* id, AST_NODE *value);
+AST_NODE* createCondNode(AST_NODE* boolean, AST_NODE* tru, AST_NODE* fls);
+SYMBOL_TABLE_NODE* createCustomFunction(char* type, char* id, SYMBOL_TABLE_NODE* argList, AST_NODE* value);
 
-AST_NODE *symbolTreeAstLink(SYMBOL_TABLE_NODE* symbolTable, AST_NODE* node);
+AST_NODE *listAstLink(SYMBOL_TABLE_NODE* table, AST_NODE* node);
 AST_NODE *addOperandToList(AST_NODE *newHead, AST_NODE *list);
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *list, SYMBOL_TABLE_NODE *newHead);
 

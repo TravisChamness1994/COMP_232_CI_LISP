@@ -1,3 +1,7 @@
 ((let(int x 1.00))x)
+((let (int a 5)) (add a 5))
+((let (int a 5)) (add a 5.0))
+((let (int a 5.5)) (add a 5))
 (mult ((let (int a (div 3 2))) a) 4)
-a = 3/2 = 1.5 = 1 * 4 = 4
+(mult ((let (double a (div 3 2))) a) 4)
+((let (int a 3)) (hypot a 4))
