@@ -1,14 +1,14 @@
-#CiLisp Documentation
-###CiLisp Summary:
+#CiLisp Documentation#
+###CiLisp Summary:###
 CiLisp is an interpreter with limited mathematical functionality that can accomodate for user defined recursive functions, conditional statements, an boolean logic. CiLisp is created in multiple tasks beginning with the first task implementing the skeletal functions such as the basic math and AST. The second task implements variable binding with symbols and variable scope and task three implements type casting for those symbols. Task four is the implementation of special logical functions and special functions such as print and read. The logical functions include greater, less, equal, and a cond type AST node that acts as turnary. The print has an unusual feature that prints all values passed to it and returns the final value in it list. This allows print to act effectively in mathematical expressions as the number that it returns. Read pulls a string from the standard input and only accepts doubles or integers as defined in the language. Task five implements the custom function ability for CiLisp granting users the ability to create custom defined functions with resursive ability and type casting.
 
-##Task 1
+##Task 1##
 - Description: 
 Task 1 of CiLisp contains the preliminary sequences in order to create the working parser, which is the backbone of CiLisp. This includes creating a Bison and Flex file to create, pass, and link together the decorated parse tree that represents our given language. Once completed, the focus is turned to the ciLisp.c file where we evaluate the parse tree. Using recursive generic methods, nodes are passed one after the other to the evaluating methods in order to return the number values of what may be complex nested processes. Upon return, these numeric values can then be evaluated with the specific operation necessary. At the final stage of our return, we output the pertanant information of the evaluated numberic data being the data type and its value. 
 ***Task One will have significant testing documentation because of the weight of necessary use throughout CiLisp.***
 Implementation for these functions was very simple and straight forward. Each function itself has a definition implemented in C. The main work here is to accomodate the proper amount of arguments given.
 - Known Bugs: A bug exists in the pow function. View the Pow test for further explaination.
-###Neg
+###Neg###
 ```
 input:
 
@@ -37,7 +37,7 @@ Integer: -1
 Process finished with exit code 0
 ```
 
-###Abs
+###Abs###
 ```
 input:
 (abs)
@@ -63,7 +63,7 @@ WARNING: abs called with extra(ignored) operands.
 Integer: 1
 ```
 
-###Add
+###Add###
 ```
 input:
 (add)
@@ -88,7 +88,7 @@ Double: 0.000000
 
 ```
 
-###Sub
+###Sub###
 ```
 input:
 (sub)
@@ -131,7 +131,7 @@ Integer: -1
 
 ```
 
-###Mult
+###Mult###
 ```
 input:
 (mult)
@@ -162,7 +162,7 @@ Integer: -120
 
 ```
 
-###Div
+###Div###
 ```
 input:
 (div)
@@ -216,7 +216,7 @@ Integer: 0
 Integer: 2
 ```
 
-###Rem
+###Rem###
 ```
 input:
 (rem)
@@ -272,7 +272,7 @@ Integer: 1
 Integer: 2
 ```
 
-###Exp
+###Exp###
 ```
 inputs:
 (exp)
@@ -305,7 +305,7 @@ Double: 2.718282
 
 ```
 
-###Exp2
+###Exp2###
 ```
 input:
 (exp2)
@@ -346,7 +346,7 @@ WARNING: exp2 called with extra(ignored) operands.
 Integer: 2
 ```
 
-###Pow
+###Pow###
 ```
 input:
 (pow)
@@ -396,7 +396,7 @@ Process finished with exit code 139 (interrupted by signal 11: SIGSEGV)
 ***Bug Note***
 In pow expression, (pow 27 (div 1 3.0)), when freeing the abs function AST node, the free function portion also attempts to free the function node id value. While this task is accomplished in every single previous AST node, this instance crashes with a segmentation fault. On investigation, I have not been able to find where the id portion gets any information in my AST creation. In tracking down, I implemented a check to ensure that if the case of function type being used where id should be NULL that it is set to NULL, but this did not fix it. 
 
-###Log
+###Log###
 ```
 input:
 
@@ -429,7 +429,7 @@ WARNING: exp called with extra(ignored) operands.
 Double: 0.000000
 ```
 
-###Sqrt
+###Sqrt###
 ```
 input:
 (sqrt)
@@ -474,7 +474,7 @@ Integer: 1
 
 ```
 
-###Cbrt
+###Cbrt###
 ```
 input:
 (cbrt)
@@ -522,7 +522,7 @@ Integer: 1
 
 ```
 
-###Hypot
+###Hypot###
 ```
 input:
 (hypot)
@@ -568,7 +568,7 @@ Double: 13.000000
 
 ```
 
-###Max
+###Max###
 ```
 input:
 (max)
@@ -598,7 +598,7 @@ Integer: 9
 Double: 25.000000
 ```
 
-###Min
+###Min###
 ```
 input:
 (min)
@@ -625,7 +625,7 @@ Integer: -5
 Double: -12.000000
 ```
 
-###Composition Test
+###Composition Test###
 ```
 input:
 (log (exp(log(exp 1))))
@@ -652,7 +652,7 @@ Integer: 28
 
 Double: 28.000000
 ```
-##Task 2
+##Task 2##
 
 - Description:
 Task 2 of CiLisp elaborates upon the ability of the parser to recognize more variables to perform arithmetic with. The variables added as part of task 2 are symbol nodes. Symbold nodes contain ID's, values, and a next symbol pointer. By expanding the definition of an AST_NODE, which is the primary inclusive node type, to contain a Symbol Table List. By including this symbol table list and symbol type AST_NODEs, we are able to assign and read data of otherwise non-numeric type nodes. An example of a symbol assignment is as follows: (let (abc 1))This is called the let_list and when paired with an s_expr creates the symbol table list of the AST_NODE. 
@@ -660,7 +660,7 @@ Task 2 of CiLisp elaborates upon the ability of the parser to recognize more var
 
 *For an indepth look at the relationship, view graphic at bottom of [pdf.](https://drive.google.com/file/d/1XnRFWccKS8pZmxoPVN2ZnOag8EPhdlAb/view?usp=sharing)*
 
-###Test 1
+###Test 1###
 ```
 input:
 ((let(x 1))x)
@@ -678,7 +678,7 @@ Integer: 3
 ```
 Test one is a simple evaluation which tests the basic tree construction for symbols. This is the most basic and uncomprehensive test.
 
-###Test 2
+###Test 2###
 ```
 input:
 (mult ((let (a 1) (b 2)) (add a b)) (sqrt 2))
@@ -698,7 +698,7 @@ Integer: nan
 ```
 Test 2 ensures the scope of the language is enforced. These runs show that successfully the ((Let_list) (S_expr)) relationship is intact. It was important to have my tree parent traversal was upwards and not lateral or down.
 
-###Test 3
+###Test 3###
 ```
 input:
 (add ((let (a ((let (b 2)) (mult b (sqrt 10))))) (div a 2)) ((let (c 5)) (sqrt c)))
@@ -710,10 +710,10 @@ Double: 5.398346
 ```
 Test 3 further tests the given tree to ensure depth does not break the functionality.
 
-##Task 3
+##Task 3##
 - Description: In task 3 of CiLisp, we implement type casting functionality for symbol table nodes to cast over their value. In doing this, the symbol table node was expanded to accomodate a number type variable. When casting occurs, if there is a discrepancy in precision, we alert the user of the truncation if occuring. Finally, the error for invalid character prompt is added which can be seen in test 1.
 
-###Test
+###Test###
 ```
 input:
 
@@ -748,11 +748,11 @@ Double: 5.000000
 ```
 The test for this is simply checking the ability for the programs ability to recognize the type cast in the symbol table node. Once that is tested, it is important to make certain that precision loss errors are noted and accomodated properly including a notification to the user.
 
-##Task 4
+##Task 4##
 - Description: Task 4 of CiLisp adds to the CiLisp by slightly expanding the language to include conditional statements giving the user turnary expression ability via the keyword "cond". Task 4 also allows the user to print, read, rand, and boolean test via greater, lesser, or equal functions. Print prints a list of evaluated s-expressions and returns the final value in the list. Rand returns a random value from 0 to 1 exclusive. Read reads user input in the form of doubles or integers and loops continuously until a valid input is give. 
 - Known Issues:  No known issues in task 4.
 
-###Conditional Test
+###Conditional Test###
 ```
 input:
 (cond 0 5 6)
@@ -775,7 +775,7 @@ Integer: 8
 Conditional test checks the ability for the conditional statement to execute. I used separate nodes that were not connected inside of the COND type AST node to describe the Bool True False logic rather than a connected string. My reason being readability on revisiting would be higher as the descriptive ability was greater.
 
 
-###Boolean Logic Cond
+###Boolean Logic Cond###
 ```
 input: 
 (equal 0 0)
@@ -891,7 +891,7 @@ Integer: nan
 ```
 The boolean logic test checks the ability for the equal, less, and greater to accurately portray these qualities. The qualities here are very simple and again could be created using very basic C operators. 
 
-###Print Test
+###Print Test###
 ```
 input:
 (print 1)
@@ -928,7 +928,7 @@ Integer: 24
 ```
 Print is functionally a list which is iterated through and returned with the final value in the list. 
 
-###Read Test
+###Read Test###
 ```
 > (add 4 (read))
 
@@ -986,11 +986,11 @@ Double: 2.500000
 Double: 5.000000
 ```
 The test above is trying its very best to break the read function. Read is a set of switch cases based on the FSM describing the regex for both integer and double. With proper checks, the read function acts very well in detecting errors and clearing itself of previous input.
-##Task 
+##Task 5##
 - Description: Task 5 implements user created custom recursive capable functions with adapted SYMBOL_TABLE_NODEs, AST_NODEs, and STACK_NODEs which accomodate a tree structure that can communicate and store evaluated arguments for the user defined functions and calls. Task 5 has multiple table types in AST_NODEs which allow the AST_NODE to store multiple table types that distinguish the contents and their uses.
 - Known Issues: No known Bugs
 
-###Test 1
+***Test 1***
 ```
 input: 
 
@@ -1004,7 +1004,7 @@ Integer: 3
 ```
 This test was very simple and did not include depth of tree meaning an embedded call to the created function further than the immediate call of the root AST node.
 
-###Test 2
+***Test 2***
 ```
 input:
 
@@ -1030,7 +1030,7 @@ Integer: 5
 ```
 Test 3 GCD custom function was a significant look at the new tree's ability to handle recurion within the tree. 
 
-###Test 4
+***Test 4***
 ```
 Input:
 
@@ -1043,7 +1043,7 @@ Integer: 6
 ``` 
 Test 4 looks at the ability to distinguish between symbols and custom function tables. Initially my tree did not properly handle the distinguished trees. With an edit to the tree construction in listAstLink function, the problem was quickly solved by stepping through the stack placing the appropriate stack node to its table.
 
-###Test 5
+***Test 5***
 ```
 input :
 
